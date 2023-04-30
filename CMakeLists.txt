@@ -3,6 +3,7 @@
 
 cmake_minimum_required(VERSION 3.26.1)
 project(vulkan-tutorial)
+include(cmake/add_shader.cmake)
 
 find_package(Vulkan REQUIRED)
 
