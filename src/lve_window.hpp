@@ -16,6 +16,7 @@ public:
 
     void initWindow();
     bool shouldClose();
+    VkExtent2D getExtent();
     void createWindowSurface(VkInstance instance, VkSurfaceKHR * surface);
 
 private:

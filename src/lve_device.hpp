@@ -70,7 +70,7 @@ class LveDevice {
       VkImage &image,
       VkDeviceMemory &imageMemory);
 
-  VkPhysicalDeviceProperties properties;
+  VkPhysicalDeviceProperties m_properties;
 
  private:
   void createInstance();

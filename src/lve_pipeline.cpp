@@ -17,10 +17,16 @@ lve::LvePipeline::~LvePipeline()
     vkDestroyPipeline(lveDevice.device(), graphicsPipeline, nullptr);
 }
 
+void lve::LvePipeline::bind(VkCommandBuffer commandBuffer)
+{
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+}
+
 lve::PipelineConfigInfo lve::LvePipeline::defaultPipelineConfigInfo([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)
 {
     // super long value didn't feel like formatting it.
     constexpr VkColorComponentFlags colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    
     lve::PipelineConfigInfo configInfo{
         .viewport{
             .x = 0.0f
@@ -33,13 +39,6 @@ lve::PipelineConfigInfo lve::LvePipeline::defaultPipelineConfigInfo([[maybe_unus
         .scissor{
             .offset = {0, 0}
             ,.extent = {width, height}
-        },
-        .viewportInfo{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
-            ,.viewportCount = 1
-            ,.pViewports = &configInfo.viewport
-            ,.scissorCount = 1
-            ,.pScissors = &configInfo.scissor
         },
         .inputAssemblyInfo {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO
@@ -154,13 +153,21 @@ void lve::LvePipeline::createGraphicsPipeline(const std::string &vertFilepath, c
         ,.pVertexAttributeDescriptions = nullptr
     };
 
+    VkPipelineViewportStateCreateInfo viewportInfo {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
+        ,.viewportCount = 1
+        ,.pViewports = &configInfo.viewport
+        ,.scissorCount = 1
+        ,.pScissors = &configInfo.scissor
+    };
+
     VkGraphicsPipelineCreateInfo pipelineInfo{
         .sType                 = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO
         ,.stageCount           = 2
         ,.pStages              = shaderStages
         ,.pVertexInputState    = &vertexInputInfo
         ,.pInputAssemblyState  = &configInfo.inputAssemblyInfo
-        ,.pViewportState       = &configInfo.viewportInfo
+        ,.pViewportState       = &viewportInfo
         ,.pRasterizationState  = &configInfo.rasterizationInfo
         ,.pMultisampleState    = &configInfo.multisampleInfo
         ,.pDepthStencilState   = &configInfo.depthStencilInfo

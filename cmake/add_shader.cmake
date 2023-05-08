@@ -1,20 +1,18 @@
 # https://github.com/ARM-software/vulkan-sdk/blob/master/Sample.cmake
-function(add_shader TARGET SHADER)
-    find_program(GLSLC glslc)
-    set(current-shader-path ${CMAKE_SOURCE_DIR}/src/shaders/${SHADER})
-    
-    set(current-output-path ${CMAKE_BINARY_DIR}/src/shaders/${SHADER}.spv)
-    get_filename_component(current-output-dir ${current-output-path} DIRECTORY)
+function(add_shader TARGET SHADER SPV)
+    get_filename_component(current-output-dir ${SPV} DIRECTORY)
     file(MAKE_DIRECTORY ${current-output-dir})
 
+    find_program(GLSLC glslc)
     add_custom_command(
-        OUTPUT ${current-output-path}
+        OUTPUT ${SPV}
         COMMAND ${GLSLC}
-        ARGS ${current-shader-path} -o ${current-output-path}
-        DEPENDS ${current-shader-path}
-        IMPLICIT_DEPENDS CXX ${current-shader-path}
+        ARGS ${SHADER} -o ${SPV}
+        DEPENDS ${SHADER}
+        IMPLICIT_DEPENDS CXX ${SHADER}
+        COMMENT "Rebuilding: ${SPV}"
         VERBATIM)
 
-    set_source_files_properties(${current-output-path} PROPERTIES GENERATED TRUE)
-    target_sources(${TARGET} PRIVATE ${current-output-path})
+    set_source_files_properties(${SPV} PROPERTIES GENERATED TRUE)
+    target_sources(${TARGET} PRIVATE ${SHADER} ${SPV})
 endfunction(add_shader)

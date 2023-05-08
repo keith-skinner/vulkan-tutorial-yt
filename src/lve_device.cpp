@@ -20,15 +20,15 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
   return VK_FALSE;
 }
 
-VkResult CreateDebugUtilsMessengerEXT(
+static VkResult CreateDebugUtilsMessengerEXT(
     VkInstance instance,
     const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
     const VkAllocationCallbacks *pAllocator,
     VkDebugUtilsMessengerEXT *pDebugMessenger) 
 {
-  auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+  auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(
       instance,
-      "vkCreateDebugUtilsMessengerEXT");
+      "vkCreateDebugUtilsMessengerEXT"));
   if (func != nullptr) {
     return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
   } else {
@@ -36,21 +36,21 @@ VkResult CreateDebugUtilsMessengerEXT(
   }
 }
 
-void DestroyDebugUtilsMessengerEXT(
+static void DestroyDebugUtilsMessengerEXT(
     VkInstance instance,
     VkDebugUtilsMessengerEXT debugMessenger,
     const VkAllocationCallbacks *pAllocator)
 {
-  auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+  auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(
       instance,
-      "vkDestroyDebugUtilsMessengerEXT");
+      "vkDestroyDebugUtilsMessengerEXT"));
   if (func != nullptr) {
     func(instance, debugMessenger, pAllocator);
   }
 }
 
 // class member functions
-LveDevice::LveDevice(LveWindow &window) : window{window} {
+LveDevice::LveDevice(LveWindow &_window) : window{_window} {
   createInstance();
   setupDebugMessenger();
   createSurface();
@@ -98,7 +98,7 @@ void LveDevice::createInstance() {
     createInfo.ppEnabledLayerNames = validationLayers.data();
 
     populateDebugMessengerCreateInfo(debugCreateInfo);
-    createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *)&debugCreateInfo;
+    createInfo.pNext = reinterpret_cast<VkDebugUtilsMessengerCreateInfoEXT *>(&debugCreateInfo);
   } else {
     createInfo.enabledLayerCount = 0;
     createInfo.pNext = nullptr;
@@ -132,8 +132,8 @@ void LveDevice::pickPhysicalDevice() {
     throw std::runtime_error("failed to find a suitable GPU!");
   }
 
-  vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-  std::cout << "physical device: " << properties.deviceName << std::endl;
+  vkGetPhysicalDeviceProperties(physicalDevice, &m_properties);
+  std::cout << "physical device: " << m_properties.deviceName << std::endl;
 }
 
 void LveDevice::createLogicalDevice() {
@@ -329,7 +329,7 @@ QueueFamilyIndices LveDevice::findQueueFamilies(VkPhysicalDevice device) {
   std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
   vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-  int i = 0;
+  uint32_t i = 0;
   for (const auto &queueFamily : queueFamilies) {
     if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
       indices.graphicsFamily = i;

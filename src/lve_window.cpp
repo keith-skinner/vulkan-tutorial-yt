@@ -1,5 +1,6 @@
 #include "lve_window.hpp"
 #include <stdexcept>
+#include "utility.hpp"
 
 
 lve::LveWindow::LveWindow(int w, int h, std::string name)
@@ -25,6 +26,11 @@ void lve::LveWindow::initWindow()
 bool lve::LveWindow::shouldClose()
 {
     return glfwWindowShouldClose(window);
+}
+
+VkExtent2D lve::LveWindow::getExtent()
+{
+    return {to_unsigned(width), to_unsigned(height)};
 }
 
 void lve::LveWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface)
